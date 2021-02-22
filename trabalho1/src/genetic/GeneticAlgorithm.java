@@ -33,6 +33,7 @@ public class GeneticAlgorithm {
 
     public double evaluate(Solution solution) {
         return 3905.93 - (100*Math.pow(Math.pow(solution.getX(), 2) - solution.getY(), 2)) - Math.pow((1 - solution.getX()), 2);
+//        return 3905.93 - Math.pow(((100 * Math.pow(solution.getX(),2)) - (100*solution.getY())),2) - Math.pow((1 - solution.getX()),2);
     }
 
     private Solution generateRandomSolution() {
