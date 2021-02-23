@@ -23,10 +23,6 @@ public class GeneticAlgorithm {
                 newPopulation.add(s3);
             }
             this.population = newPopulation;
-            Solution betterSolution = getBetterSolution();
-            System.out.println(betterSolution);
-            System.out.println(evaluate(betterSolution));
-            System.out.println();
         }
         return getBetterSolution();
     }
@@ -38,7 +34,6 @@ public class GeneticAlgorithm {
 
     private Solution generateRandomSolution() {
         Solution solution = new Solution(minValue + (maxValue - minValue) * Math.random(), minValue + (maxValue - minValue) * Math.random());
-        System.out.println(solution);
         return solution;
     }
 
@@ -71,6 +66,14 @@ public class GeneticAlgorithm {
     }
 
     private Solution select() {
+        double random = Math.random();
+        if(random <= 0.5)
+            return selectTournament();
+        else
+            return selectProportionalToAdequation();
+    }
+
+    private Solution selectTournament() {
         Random random = new Random();
         int[] randomIndexes = new int[]{
             random.nextInt(400),
@@ -87,6 +90,23 @@ public class GeneticAlgorithm {
         return population.get(greater);
     }
 
+    private Solution selectProportionalToAdequation() {
+        double worseFitness = getWorseFitness();
+        double variationSummatory = 0;
+        for (Solution solution : population) {
+            variationSummatory += evaluate(solution) - worseFitness;
+        }
+        while(true) {
+            for (Solution solution : population) {
+                double random = Math.random();
+                if (variationSummatory == 0)
+                    return solution;
+                if (random <= (evaluate(solution) - worseFitness) / variationSummatory)
+                    return solution;
+            }
+        }
+    }
+
     private Solution getBetterSolution() {
         int greater = 0;
         for (int i = 1; i < population.size(); i++) {
@@ -94,6 +114,15 @@ public class GeneticAlgorithm {
                 greater = i;
         }
         return population.get(greater);
+    }
+
+    private double getWorseFitness() {
+        int worse = 0;
+        for (int i = 1; i < population.size(); i++) {
+            if(evaluate(population.get(worse)) > evaluate(population.get(i)))
+                worse = i;
+        }
+        return evaluate(population.get(worse));
     }
 
 }
