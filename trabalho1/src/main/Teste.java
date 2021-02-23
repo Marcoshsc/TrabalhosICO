@@ -3,13 +3,19 @@ package main;
 import genetic.GeneticAlgorithm;
 import genetic.Solution;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Teste {
     public static void main(String[] args) {
-        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        Solution solution = geneticAlgorithm.execute();
-        System.out.println(solution);
-        System.out.println(geneticAlgorithm.evaluate(solution));
-        System.out.println(geneticAlgorithm.evaluate(new Solution(0.234949392488371, 0.1174746962441855)));
-        System.out.println(geneticAlgorithm.evaluate(new Solution(1.00004, 1.000006)));
+        GeneticAlgorithm ga = new GeneticAlgorithm();
+        List<Solution> solutions = new ArrayList<>();
+        for (int i = 0; i < 500; i++) {
+            System.out.println("Execution " + i);
+            solutions.add(new GeneticAlgorithm().execute());
+        }
+        for (int i = 0; i < 500; i++) {
+            System.out.println(ga.evaluate(solutions.get(i)));
+        }
     }
 }

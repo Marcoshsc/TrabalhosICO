@@ -1,22 +1,23 @@
 package genetic;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class GeneticAlgorithm {
 
     private double minValue = -2.048;
     private double maxValue = 2.048;
-    private int popSize = 800;
+    private int popSize = 100;
     private List<Solution> population;
+    private int iterations = 50;
     private double mutationRate = 0.02;
+    List<Solution> copy;
+
 
     public Solution execute() {
         generateInitialPopulation();
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < iterations; i++) {
             List<Solution> newPopulation = new ArrayList<>();
-            for (int j = 0; j < 400; j++) {
+            for (int j = 0; j < popSize; j++) {
                 Solution s1 = select();
                 Solution s2 = select();
                 Solution s3 = reproduce(s1, s2);
@@ -27,14 +28,25 @@ public class GeneticAlgorithm {
         return getBetterSolution();
     }
 
+    public Solution uniform(){
+        int random = new Random().nextInt(population.size());
+        return population.get(random);
+    }
+
+
+    public Solution truncate() {
+        List<Solution> best = copy.subList(0, 5);
+        int random = new Random().nextInt(5);
+        return best.get(random);
+    }
+
     public double evaluate(Solution solution) {
         return 3905.93 - (100*Math.pow(Math.pow(solution.getX(), 2) - solution.getY(), 2)) - Math.pow((1 - solution.getX()), 2);
 //        return 3905.93 - Math.pow(((100 * Math.pow(solution.getX(),2)) - (100*solution.getY())),2) - Math.pow((1 - solution.getX()),2);
     }
 
     private Solution generateRandomSolution() {
-        Solution solution = new Solution(minValue + (maxValue - minValue) * Math.random(), minValue + (maxValue - minValue) * Math.random());
-        return solution;
+        return new Solution(minValue + (maxValue - minValue) * Math.random(), minValue + (maxValue - minValue) * Math.random());
     }
 
     private void generateInitialPopulation() {
@@ -67,20 +79,61 @@ public class GeneticAlgorithm {
 
     private Solution select() {
         double random = Math.random();
-        if(random <= 0.5)
+        if(random <= 0.2)
             return selectTournament();
-        else
+        else if(random <= 0.4) {
+            this.copy = new ArrayList<>(population);
+            copy.sort((a, b) -> {
+                double aValue = evaluate(a);
+                double bValue = evaluate(b);
+                return Double.compare(aValue, bValue);
+            });
+            return roulette(1, 30).get(0);
+        }
+        else if(random <= 0.6)
             return selectProportionalToAdequation();
+        else if(random <= 0.8)
+            return uniform();
+        else {
+            this.copy = new ArrayList<>(population);
+            copy.sort((a, b) -> {
+                double aValue = -evaluate(a);
+                double bValue = -evaluate(b);
+                return Double.compare(aValue, bValue);
+            });
+            return truncate();
+        }
+    }
+
+    public List<Solution> roulette(int k , int cut){
+        List<Solution> best = copy.subList(0, cut);
+        List<Solution> intern = new ArrayList<>();
+        List<Solution> result = new ArrayList<>();
+        for(int i = 0; i < best.size(); i++){
+            int salt = (int) (( -evaluate(best.get(i)) / 20) * i);
+            int value = (int) (100 - salt - (-evaluate(best.get(i))));
+
+            for(int j = 0;j <= value; j++){
+                intern.add(best.get(i));
+            }
+        }
+
+        while (result.size() != k){
+            int number = new Random().nextInt(intern.size());
+            if(!result.contains(intern.get(number)))
+                result.add(intern.get(number));
+        }
+        return result;
     }
 
     private Solution selectTournament() {
         Random random = new Random();
         int[] randomIndexes = new int[]{
-            random.nextInt(400),
-            random.nextInt(400),
-            random.nextInt(400),
-            random.nextInt(400),
-            random.nextInt(400)
+            random.nextInt(popSize),
+            random.nextInt(popSize),
+            random.nextInt(popSize),
+            random.nextInt(popSize),
+            random.nextInt(popSize)
         };
         int greater = 0;
         for (int i = 1; i < randomIndexes.length; i++) {
