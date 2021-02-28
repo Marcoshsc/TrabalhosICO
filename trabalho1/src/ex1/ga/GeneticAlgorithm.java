@@ -1,4 +1,4 @@
-package genetic;
+package ex1.ga;
 
 import java.util.*;
 

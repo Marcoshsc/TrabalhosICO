@@ -1,7 +1,6 @@
-package main;
+package ex2.sa;
 
-import anneling2.SimulatedAnneling;
-import genetic.Solution;
+import ex2.sa.SimulatedAnneling;
 
 import java.io.FileWriter;
 import java.io.IOException;

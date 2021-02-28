@@ -1,4 +1,4 @@
-package genetic;
+package ex1.ga;
 
 public class Solution {
     private double x;

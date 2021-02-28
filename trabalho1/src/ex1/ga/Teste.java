@@ -1,4 +1,4 @@
-package genetic;
+package ex1.ga;
 
 import java.io.FileWriter;
 import java.io.IOException;

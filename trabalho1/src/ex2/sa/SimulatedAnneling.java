@@ -1,4 +1,4 @@
-package anneling2;
+package ex2.sa;
 
 import java.util.*;
 
