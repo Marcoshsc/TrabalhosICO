@@ -1,0 +1,8 @@
+
+t	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(×ÊÌîþÿÿÿÿ
+-
+java:S1700"Rename field "solution"(×”Ò¤
+F
+java:S1128"+Remove this unused import 'java.util.List'.(Õë±Äøÿÿÿÿ
+o
+java:S1210 "YOverride "equals(Object obj)" to comply with the contract of the "compareTo(T o)" method.(Ñ¶¼Ù

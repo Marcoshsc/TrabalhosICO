@@ -6,26 +6,53 @@ public class GeneticAlgorithm {
 
     private double minValue = -2.048;
     private double maxValue = 2.048;
-    private int popSize = 100;
+    private int popSize = 40;
     private List<Solution> population;
-    private int iterations = 50;
+    private int iterations = 10;
     private double mutationRate = 0.02;
     List<Solution> copy;
+    List<Double> bestForEachGeneration;
+    List<Double> fitnessValues;
 
 
     public Solution execute() {
         generateInitialPopulation();
+        bestForEachGeneration = new ArrayList<>();
         for (int i = 0; i < iterations; i++) {
+            fitnessValues = new ArrayList<>();
+            for (Solution solution : population)
+                fitnessValues.add(evaluate(solution));
+            this.copy = new ArrayList<>(population);
+            copy.sort((a, b) -> {
+                double aValue = fitnessValues.get(a.index);
+                double bValue = fitnessValues.get(b.index);
+                return Double.compare(bValue, aValue);
+            });
             List<Solution> newPopulation = new ArrayList<>();
+            int k = 0;
             for (int j = 0; j < popSize; j++) {
                 Solution s1 = select();
                 Solution s2 = select();
                 Solution s3 = reproduce(s1, s2);
                 newPopulation.add(s3);
+                s3.index = k;
+                k++;
             }
-            this.population = newPopulation;
+            bestForEachGeneration.add(evaluate(getBetterSolution()));
+            updateBetters(newPopulation);
         }
         return getBetterSolution();
+    }
+
+    private void updateBetters(List<Solution> newSolutions) {
+        List<Solution> copys = new ArrayList<>(population);
+        copys.addAll(newSolutions);
+        copys.sort((a, b) -> {
+            double aValue = evaluate(a);
+            double bValue = evaluate(b);
+            return Double.compare(bValue, aValue);
+        });
+        this.population = copys.subList(0, popSize);
     }
 
     public Solution uniform(){
@@ -52,7 +79,9 @@ public class GeneticAlgorithm {
     private void generateInitialPopulation() {
         population = new ArrayList<>();
         for (int i = 0; i < popSize; i++) {
-            population.add(generateRandomSolution());
+            Solution solution = generateRandomSolution();
+            solution.index = i;
+            population.add(solution);
         }
     }
 
@@ -61,11 +90,11 @@ public class GeneticAlgorithm {
         if(number <= mutationRate) {
             double isX = Math.random();
             if(isX >= 0.5) {
-                double newX = solution.getX() / 2;
+                double newX = solution.getX() * Math.random();
                 solution.setX(Math.min(Math.max(newX, minValue), minValue));
             }
             else
-                solution.setY(Math.min(Math.max(solution.getY() / 2, minValue), maxValue));
+                solution.setY(Math.min(Math.max(solution.getY() * Math.random(), minValue), maxValue));
         }
     }
 
@@ -78,50 +107,58 @@ public class GeneticAlgorithm {
     }
 
     private Solution select() {
-        double random = Math.random();
-        if(random <= 0.2)
-            return selectTournament();
-        else if(random <= 0.4) {
-            this.copy = new ArrayList<>(population);
-            copy.sort((a, b) -> {
-                double aValue = evaluate(a);
-                double bValue = evaluate(b);
-                return Double.compare(aValue, bValue);
-            });
-            return roulette(1, 30).get(0);
-        }
-        else if(random <= 0.6)
-            return selectProportionalToAdequation();
-        else if(random <= 0.8)
-            return uniform();
-        else {
-            this.copy = new ArrayList<>(population);
-            copy.sort((a, b) -> {
-                double aValue = -evaluate(a);
-                double bValue = -evaluate(b);
-                return Double.compare(aValue, bValue);
-            });
-            return truncate();
-        }
+        return selectTournament();
+
+//        return roulette(1, 5).get(0);
+//
+//        return selectProportionalToAdequation();
+//
+//        return uniform();
+//
+//        this.copy = new ArrayList<>(population);
+//        copy.sort((a, b) -> {
+//            double aValue = -evaluate(a);
+//            double bValue = -evaluate(b);
+//            return Double.compare(aValue, bValue);
+//        });
+//        return truncate();
     }
 
-    public List<Solution> roulette(int k , int cut){
+    public List<Solution> roulette(int k ,int cut){
         List<Solution> best = copy.subList(0, cut);
         List<Solution> intern = new ArrayList<>();
         List<Solution> result = new ArrayList<>();
         for(int i = 0; i < best.size(); i++){
-            int salt = (int) (( -evaluate(best.get(i)) / 20) * i);
-            int value = (int) (100 - salt - (-evaluate(best.get(i))));
+            int salt = (int) (( -fitnessValues.get(best.get(i).index) / 20) * i);
+            int value = (int) (100 - salt - (-fitnessValues.get(best.get(i).index)));
 
             for(int j = 0;j <= value; j++){
                 intern.add(best.get(i));
             }
         }
-
+        int stop = 0;
+        boolean incomplete = false;
         while (result.size() != k){
-            int number = new Random().nextInt(intern.size());
+            int number = (int) (Math.random() * intern.size());
             if(!result.contains(intern.get(number)))
                 result.add(intern.get(number));
+            if(stop >= population.size() * 3){
+                incomplete = true;
+                break;
+            }
+            stop++;
+        }
+        if(incomplete){
+            int u = 0;
+            Collections.shuffle(intern);
+            while (result.size() != k){
+                if(u >= intern.size()){
+                    break;
+                }
+                if(!result.contains(intern.get(u)))
+                    result.add(intern.get(u));
+                u++;
+            }
         }
         return result;
     }
@@ -163,7 +200,7 @@ public class GeneticAlgorithm {
     private Solution getBetterSolution() {
         int greater = 0;
         for (int i = 1; i < population.size(); i++) {
-            if(evaluate(population.get(greater)) < evaluate(population.get(i)))
+            if(fitnessValues.get(population.get(greater).index) < fitnessValues.get(population.get(i).index))
                 greater = i;
         }
         return population.get(greater);
@@ -172,10 +209,10 @@ public class GeneticAlgorithm {
     private double getWorseFitness() {
         int worse = 0;
         for (int i = 1; i < population.size(); i++) {
-            if(evaluate(population.get(worse)) > evaluate(population.get(i)))
+            if(fitnessValues.get(population.get(worse).index) > fitnessValues.get(population.get(i).index))
                 worse = i;
         }
-        return evaluate(population.get(worse));
+        return fitnessValues.get(population.get(worse).index);
     }
 
 }

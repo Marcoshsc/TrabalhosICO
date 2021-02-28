@@ -1,0 +1,21 @@
+
+s	java:S135T"YReduce the total number of break and continue statements in this loop to use at most one.(È×©Ôüÿÿÿÿ
+t	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(×ÊÌîşÿÿÿÿ
+?
+java:S2140")Use "java.util.Random.nextInt()" instead.(òï—æ
+?
+java:S21403")Use "java.util.Random.nextInt()" instead.(Öï÷ä
+?
+java:S2140g")Use "java.util.Random.nextInt()" instead.(±—áº
+D
+java:S2140h")Use "java.util.Random.nextInt()" instead.(Óƒ‚ºøÿÿÿÿ
+t
+java:S3012w"YUse "Arrays.copyOf", "Arrays.asList", "Collections.addAll" or "System.arraycopy" instead.(Ôƒø­üÿÿÿÿ
+E
+java:S2140")Use "java.util.Random.nextInt()" instead.(ìÊõñşÿÿÿÿ
+@
+java:S2140‘")Use "java.util.Random.nextInt()" instead.(Æ­°´
+T	java:S106º"9Replace this use of System.out or System.err by a logger.(ÕÏĞùşÿÿÿÿ
+O	java:S106»"9Replace this use of System.out or System.err by a logger.(êœ¨
+O	java:S106½"9Replace this use of System.out or System.err by a logger.(·¥ÒŸ
+O	java:S106¿"9Replace this use of System.out or System.err by a logger.(ëÒìì
