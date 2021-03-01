@@ -1,4 +1,4 @@
-package anneling2;
+package ex2.sa;
 
 import java.util.*;
 
@@ -22,10 +22,14 @@ public class SimulatedAnneling {
     private double rnd = 0.5;
     private List<Solution> solutions;
     private double temperature;
+    public List<Double> fitnessPerTemperature;
 
     public Solution execute() {
-        this.solutions = getInitialSolutions();
-        this.temperature = calculateInitialTemperature();
+        do {
+            this.solutions = getInitialSolutions();
+            this.temperature = calculateInitialTemperature();
+        } while(this.temperature <= 0);
+        fitnessPerTemperature = new ArrayList<>();
         while(this.temperature > 0.00001) {
             for (int i = 0; i < iterationsPerTemperature; i++) {
                 Solution old = solutions.get(i);
@@ -36,8 +40,7 @@ public class SimulatedAnneling {
             }
             this.temperature = freezingRate * this.temperature;
             Solution betterSolution = getBetterSolution();
-            System.out.println(betterSolution);
-            System.out.println(evaluate(betterSolution));
+            fitnessPerTemperature.add(evaluate(betterSolution));
         }
         return getBetterSolution();
     }

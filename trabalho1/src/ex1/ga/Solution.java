@@ -1,8 +1,9 @@
-package genetic;
+package ex1.ga;
 
 public class Solution {
     private double x;
     private double y;
+    public int index;
 
     public Solution(double x, double y) {
         this.x = x;
@@ -30,6 +31,7 @@ public class Solution {
         return "Solution{" +
                 "x=" + x +
                 ", y=" + y +
+                ", index=" + index +
                 '}';
     }
 }
