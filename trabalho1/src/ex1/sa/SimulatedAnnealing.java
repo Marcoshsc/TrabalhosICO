@@ -37,7 +37,8 @@ public class SimulatedAnnealing {
         return   - (totalValue / diffs.size()) / ZETA;
     }
 
-   public void init(DeJong deJong){
+   public List<Solution> init(DeJong deJong){
+        List<Solution> result = new ArrayList<>();
         double value = DeJong.calcDeJongFunction(deJong.getInitialSolution());
         Double[] finalSolution = deJong.getInitialSolution();
         double temp = getInitialTemperature(deJong);
@@ -50,26 +51,29 @@ public class SimulatedAnnealing {
                     value = newValue;
                 } else if (temp != 0) {
                     double constant = Math.pow(EULER, (-1 * (-1 * (newValue - value)) / temp));
-
-                    if (constant > 0.5) {
+                    if (constant > Math.random()) {
                         finalSolution = newSolution;
                         value = newValue;
                     }
                 }
             }
+            result.add(new Solution(finalSolution,value));
             temp = temp * this.cooling;
         }
-       printSolution(finalSolution, value);
-
+       return result;
 
    }
 
-   private void printSolution(Double[] solution, Double value){
-       System.out.println("Função DeJong com a meteheurística de Simulated Annealing\n");
-       System.out.format("Solução =>  X = (%s , %s)%n", solution[0], solution[1]);
-       System.out.println("Resultado => F = " + value);
-   }
-
-
-
+    public static Double getBest(List<List<Solution>> el, int numberOfColumn){
+        List<Solution> column = new ArrayList<>();
+        for(int i=0; i< el.size() - 1; i++){
+            if(el.get(i).size() - 1 > numberOfColumn)
+                column.add(el.get(i).get(numberOfColumn));
+        }
+        Double result = 0d;
+        for(Solution x: column){
+            result += x.getValue();
+        }
+        return result / column.size();
+    }
 }

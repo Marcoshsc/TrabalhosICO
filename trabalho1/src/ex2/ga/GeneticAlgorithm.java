@@ -33,6 +33,47 @@ public class GeneticAlgorithm {
         return result;
     }
 
+
+
+    private List<Solution> selectProportionalToAdequation(int k ,List<Solution> population) {
+        List<Solution> result = new ArrayList<>();
+        double worseFitness = getWorseFitness(population);
+        double variationSummatory = 0;
+        for (Solution solution : population) {
+            variationSummatory += solution.getDistance() - worseFitness;
+        }
+        while (result.size() != k){
+
+            while (true) {
+                for (Solution solution : population) {
+                    double random = Math.random();
+                    if (variationSummatory == 0) {
+                        result.add(solution);
+                        break;
+                    }
+                    if (random <= (-solution.getDistance() - worseFitness) / variationSummatory) {
+                        result.add(solution);
+                        break;
+                    }
+                }
+                if (result.size() > 0) {
+                    break;
+                }
+            }
+        }
+
+    return result;
+    }
+
+    private double getWorseFitness(List<Solution> population) {
+        int worse = 0;
+        for (int i = 1; i < population.size(); i++) {
+            if( population.get(worse).getDistance() < population.get(i).getDistance())
+                worse = i;
+        }
+        return population.get(worse).getDistance();
+    }
+
     public List<Solution> roulette(int k ,int cut, List<Solution> generation){
         Collections.sort(generation);
         List<Solution> best = generation.subList(0, cut);
@@ -46,24 +87,66 @@ public class GeneticAlgorithm {
                 intern.add(best.get(i));
             }
         }
-
+        int stop = 0;
+        boolean incomplete = false;
         while (result.size() != k){
             int number = (int) (Math.random() * intern.size());
             if(!result.contains(intern.get(number)))
                 result.add(intern.get(number));
+            if(stop >= generation.size() * 3){
+                incomplete = true;
+                break;
+            }
+            stop++;
+        }
+        if(incomplete){
+            int u = 0;
+            Collections.shuffle(intern);
+            while (result.size() != k){
+                if(u >= intern.size()){
+                    break;
+                }
+                if(!result.contains(intern.get(u)))
+                    result.add(intern.get(u));
+                u++;
+            }
         }
         return result;
     }
-    public List<Solution> tournament(int k, int cut, List<Solution> generation){
-        Collections.sort(generation);
+
+    public List<Solution> tournament2(int k, List<Solution> generation){
         List<Solution> result = new ArrayList<>();
-        List<Solution> best = generation.subList(0, cut);
-        result.add(best.get(0));
-        List<Solution> listWithoutBest = best.subList(1, best.size() - 1);
-        Collections.shuffle(listWithoutBest);
-        result.addAll(listWithoutBest.subList(0,k - 1));
+        while (result.size() < k){
+            Collections.shuffle(generation);
+            List<Solution> tor2 = generation.subList(0, 2);
+            if(!result.contains(tor2.get(0)))
+                result.add(tor2.get(0));
+        }
         return result;
     }
+
+    public List<Solution> tournament3(int k, List<Solution> generation){
+        List<Solution> result = new ArrayList<>();
+        while (result.size() < k){
+            Collections.shuffle(generation);
+            List<Solution> tor3 = generation.subList(0, 3);
+            if(!result.contains(tor3.get(0)))
+                result.add(tor3.get(0));
+        }
+        return result;
+    }
+
+    public List<Solution> tournament5(int k, List<Solution> generation){
+        List<Solution> result = new ArrayList<>();
+        while (result.size() < k){
+            Collections.shuffle(generation);
+            List<Solution> tor5= generation.subList(0, 5);
+            if(!result.contains(tor5.get(0)))
+                result.add(tor5.get(0));
+        }
+        return result;
+    }
+
 
     public List<Solution> uniform(int k, List<Solution> generation){
         Collections.shuffle(generation);
@@ -156,39 +239,65 @@ public class GeneticAlgorithm {
     public List<Solution> getANewPopulation(List<Solution> b, Distances distances){
         List<Solution> result = new ArrayList<>();
         for(int j =0; j < b.size() - 1; j++){
-            Integer[][] newSolutions = this.crossover(b.get(j), b.get(j + 1));
-            for(Integer[] s : newSolutions){
-                result.add(Distances.calculateDistanceOfTwoPointsAndGetASolution(s, distances));
+            if( j % 2 != 0) {
+                Integer[][] newSolutions = this.crossover(b.get(j), b.get(j + 1));
+                for (Integer[] s : newSolutions) {
+                    result.add(Distances.calculateDistanceOfTwoPointsAndGetASolution(s, distances));
+                }
+                result.add(b.get(j));
             }
-            result.add(b.get(j));
         }
         return result;
     }
 
-    public void init(List<Solution> first, int generations, Distances distances){
+    private List<Solution> selectSelection(int k, int cut, List<Solution> solutions, int select){
+        switch (select){
+            case 0: return uniform(k, solutions);
+            case 1:  return selectProportionalToAdequation(k, solutions);
+            case 2:  return roulette(k,cut,solutions);
+            case 3: return truncate(k, cut,solutions);
+            case 4: return tournament2(k,solutions);
+            case 5: return tournament3(k,solutions);
+            default: return tournament5(k,solutions);
+        }
+    }
+    public List<Solution> init(List<Solution> first, Distances distances, int type){
+        List<Solution> result = new ArrayList<>();
         Double bestDistance = null;
-        Integer[] bestSolution = new Integer[0];
+        Integer[] bestSolution;
         List<Solution> generation = new ArrayList<>(first);
-        for(int i = 0; i <generations; i ++){
-            List<Solution> best = this.roulette(15,30, new ArrayList<>(generation));
-            generation.clear();
-            List<Solution> newPopulation = getANewPopulation(best,distances);
-            generation.addAll(newPopulation);
-            List<Solution> solutions = GeneticAlgorithm.getAPopulation(100 - generation.size(), distances);
-            generation.addAll(solutions);
-            if(i == generations - 1){
-                Collections.sort(generation);
-                bestDistance = generation.get(0).getDistance();
-                bestSolution = generation.get(0).getSolution();
+        for(int i = 0; i <50; i ++){
+            for(int j = 0; j < 3; j++) {
+                List<Solution> best = this.selectSelection(10, 20, new ArrayList<>(generation), type);
+                List<Solution> newPopulation = getANewPopulation(best, distances);
+                generation.addAll(newPopulation);
+                generation.addAll(best);
+                List<Solution> solutions = new ArrayList<>(generation);
+                Collections.sort(solutions);
+                generation.clear();
+                generation.addAll(solutions.subList(0, 30));
+                generation.addAll(GeneticAlgorithm.getAPopulation(20, distances));
             }
-           
+            bestDistance = generation.get(0).getDistance();
+            bestSolution = generation.get(0).getSolution();
+            result.add(new Solution(bestDistance,bestSolution));
         }
-        System.out.println("Distance ===> "+ bestDistance);
-        System.out.print("Solution ===> {");
-        for (Integer i : bestSolution ){
-            System.out.print( " " + i+ " ");
+       return result;
+    }
+
+    public static Double getBest(List<List<Solution>> el, int numberOfColumn){
+        List<Solution> column = new ArrayList<>();
+
+        for(List<Solution> x: el){
+            column.add(x.get(numberOfColumn));
         }
-        System.out.print("}");
+
+        Double result = 0d;
+        for(Solution x: column){
+            result += x.getDistance();
+        }
+
+        return result / column.size();
     }
 
 }

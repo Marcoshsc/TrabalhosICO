@@ -1,7 +1,5 @@
 package ex2.ga;
 
-import java.util.*;
-import java.util.List;
 
 public class Distances {
     Double[][] distances;
@@ -39,12 +37,6 @@ public class Distances {
         }
         return new Solution(result, solution);
     }
-
-
-
-
-
-
 }
 
 

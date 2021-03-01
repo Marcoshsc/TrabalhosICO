@@ -1,6 +1,5 @@
 package ex1.sa;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,7 +8,6 @@ public class DeJong {
 
     private Double[] initialSolution = new Double[2];
 
-//    private final double MIN_INTER
     private int numberOfSolutions;
     private Set<Double[]> setOfSolutions = new HashSet<>();
 

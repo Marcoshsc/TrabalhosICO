@@ -1,8 +1,8 @@
 package ex2.ga;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,16 +18,66 @@ public class Main {
         }
         );
 
-        GeneticAlgorithm ge = new GeneticAlgorithm();
-        List<Solution> solutions = GeneticAlgorithm.getAPopulation(100, distances);
-//        List<Solution> solutions = new ArrayList<>();
-//        for (Integer[]s: i){
-//            Solution ss = new Solution( distances.calculateDistanceOfTwoPoints(s,distances), s);
-//            dsd.add(ss);
-//        }
 
 
-        ge.init(solutions, 500, distances);
+        List<List<Solution>> results = new ArrayList<>();
+
+        for(int i = 0; i< 500; i++){
+            GeneticAlgorithm ge = new GeneticAlgorithm();
+            List<Solution> solutions = GeneticAlgorithm.getAPopulation(50, distances);
+            System.out.println(i);
+            results.add(ge.init(solutions, distances,6));
+        }
+
+        List<Double> finals = new ArrayList<>();
+        for (int i = 0; i < 50; i++){
+            System.out.println( i);
+            finals.add(GeneticAlgorithm.getBest(results, i));
+        }
+      for(int i =0; i < finals.size() ; i++){
+          System.out.println(i+1 +"- "+ finals.get(i));
+      }
+
+
+        StringBuilder builder = new StringBuilder();
+        for (List<Solution> line : results) {
+            for (Solution column : line) {
+                builder.append(column.getDistance());
+                builder.append(",");
+            }
+            builder.append("\n");
+        }
+        String str = builder.toString();
+        try {
+            FileWriter myWriter = new FileWriter("gaTruncate.txt");
+            myWriter.write(str);
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        StringBuilder builder2 = new StringBuilder();
+        int u = 1;
+        for (Double value : finals) {
+            builder2.append(u).append(": ");
+            builder2.append(value);
+            builder2.append("\n");
+            u++;
+        }
+
+        String str2 = builder2.toString();
+        try {
+            FileWriter myWriter = new FileWriter("best.txt");
+            myWriter.write(str2);
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
 
     }
 
